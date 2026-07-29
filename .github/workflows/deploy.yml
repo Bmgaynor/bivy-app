@@ -1,0 +1,33 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # nx affected needs history to diff against
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - run: npx nx affected -t lint,test,build --parallel=3
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # Explicit, not affected-gated: with one function project, gating deploy
+      # behind `nx affected` risks a silent no-op on infra-only changes.
+      # Once Phase 4 adds shared libs, switch to `nx affected -t deploy`.
+      - run: npx nx deploy api

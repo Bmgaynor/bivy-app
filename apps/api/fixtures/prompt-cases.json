@@ -1,0 +1,106 @@
+[
+  {
+    "name": "clear",
+    "question": "what should I expect this afternoon?",
+    "weather": {
+      "fetchedAt": "2026-07-28T12:00:00.000Z",
+      "location": { "lat": 47.5, "lon": -121.8 },
+      "periods": [
+        {
+          "label": "Morning",
+          "tempF": 52,
+          "windMph": 4,
+          "windDirDeg": 240,
+          "precipChancePct": 0,
+          "shortForecast": "Clear"
+        },
+        {
+          "label": "Afternoon",
+          "tempF": 71,
+          "windMph": 8,
+          "windDirDeg": 255,
+          "precipChancePct": 5,
+          "shortForecast": "Mostly clear"
+        }
+      ]
+    }
+  },
+  {
+    "name": "storm-incoming",
+    "question": "is a storm coming tonight?",
+    "weather": {
+      "fetchedAt": "2026-07-28T12:00:00.000Z",
+      "location": { "lat": 47.9, "lon": -121.4 },
+      "periods": [
+        {
+          "label": "Afternoon",
+          "tempF": 58,
+          "windMph": 12,
+          "windDirDeg": 220,
+          "precipChancePct": 40,
+          "shortForecast": "Partly cloudy"
+        },
+        {
+          "label": "Evening",
+          "tempF": 49,
+          "windMph": 22,
+          "windDirDeg": 210,
+          "precipChancePct": 85,
+          "shortForecast": "Heavy rain"
+        }
+      ]
+    }
+  },
+  {
+    "name": "high-wind",
+    "question": "safe to be on the ridge this afternoon?",
+    "weather": {
+      "fetchedAt": "2026-07-28T12:00:00.000Z",
+      "location": { "lat": 46.85, "lon": -121.76 },
+      "periods": [
+        {
+          "label": "Morning",
+          "tempF": 30,
+          "windMph": 25,
+          "windDirDeg": 280,
+          "precipChancePct": 10,
+          "shortForecast": "Overcast"
+        },
+        {
+          "label": "Afternoon",
+          "tempF": 28,
+          "windMph": 45,
+          "windDirDeg": 285,
+          "precipChancePct": 15,
+          "shortForecast": "Snow showers"
+        }
+      ]
+    }
+  },
+  {
+    "name": "ambiguous-question",
+    "question": "how's it looking?",
+    "weather": {
+      "fetchedAt": "2026-07-28T12:00:00.000Z",
+      "location": { "lat": 48.77, "lon": -121.09 },
+      "periods": [
+        {
+          "label": "Overnight",
+          "tempF": 41,
+          "windMph": 3,
+          "windDirDeg": 190,
+          "precipChancePct": 20,
+          "shortForecast": "Fog"
+        },
+        {
+          "label": "Morning",
+          "tempF": 45,
+          "windMph": 5,
+          "windDirDeg": 195,
+          "precipChancePct": 10,
+          "shortForecast": "Partly cloudy"
+        }
+      ]
+    }
+  }
+]
