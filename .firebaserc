@@ -1,6 +1,5 @@
 {
-  "targets": {
-  },
+  "targets": {},
   "projects": {
     "default": "bivy-503901"
   }

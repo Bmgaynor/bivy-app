@@ -34,6 +34,15 @@ export function createTwilioProvider(
       // webhook Twilio actually signed was https (Twilio numbers only ever
       // have HTTPS webhooks configured). Getting this wrong is the #1 cause
       // of "signature validation always fails" in this pattern.
+      //
+      // The webhook MUST be configured as the direct Cloud Run URL
+      // (https://sms-xxxxx-uc.a.run.app), not the friendly
+      // us-central1-PROJECT.cloudfunctions.net/sms proxy form — that proxy
+      // strips the /sms path before forwarding to this container, so
+      // req.originalUrl is always "/" and there is no header that recovers
+      // the original path. Signed against the direct Cloud Run URL, host +
+      // originalUrl reconstructs correctly (Twilio itself normalizes a
+      // bare-domain webhook URL to include the trailing "/" when signing).
       const url = `https://${req.get("host")}${req.originalUrl}`;
       return twilio.validateRequest(
         cfg.authToken,

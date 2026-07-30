@@ -2,7 +2,15 @@
   "name": "@bivy-app/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev": "nx serve bivy",
+    "build": "nx build api",
+    "test": "nx test api",
+    "lint": "nx lint api",
+    "affected": "nx affected -t lint,test,build",
+    "check-prompts": "nx run api:check-prompts",
+    "deploy": "nx deploy api"
+  },
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "2.5.6",

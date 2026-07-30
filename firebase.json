@@ -8,7 +8,11 @@
   },
   "hosting": {
     "public": "apps/bivy/public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "**",
@@ -23,8 +27,10 @@
     {
       "codebase": "api",
       "source": "dist/apps/api",
-      "runtime": "nodejs20",
-      "ignore": ["*.local"]
+      "runtime": "nodejs24",
+      "ignore": [
+        "*.local"
+      ]
     }
   ],
   "emulators": {

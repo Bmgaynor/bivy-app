@@ -41,6 +41,7 @@ export const sms = onRequest(
     region: "us-central1",
   },
   async (req, res) => {
+    const startedAt = Date.now();
     const provider = createTwilioProvider({
       accountSid: twilioAccountSid.value(),
       authToken: twilioAuthToken.value(),
@@ -48,23 +49,27 @@ export const sms = onRequest(
     });
 
     if (!provider.verify(req)) {
+      logger.warn("rejected request with invalid Twilio signature");
       res.status(403).send();
       return;
     }
 
     const { from, body } = provider.parseInbound(req);
+    logger.info("received sms", { from, bodyLength: body.length });
 
     if (!isAllowed(from, parseAllowlist(allowedNumbers.value()))) {
       // Silent per the Definition of Done — a non-allowlisted number gets no reply.
+      logger.warn("rejected non-allowlisted sender", { from });
       sendTwimlAck(res);
       return;
     }
 
     const parsed = parseMessage(body);
     if (!parsed) {
+      logger.info("unparseable message, sending usage hint", { from });
       await provider
         .send(from, USAGE_HINT)
-        .catch((err) => logger.error("send failed", err));
+        .catch((err) => logger.error("send failed", { from, err }));
       sendTwimlAck(res);
       return;
     }
@@ -76,11 +81,18 @@ export const sms = onRequest(
       const client = new Anthropic({ apiKey: anthropicApiKey.value() });
       const reply = await askWeatherQuestion(client, weather, parsed.question);
       await provider.send(from, reply);
+      logger.info("replied", {
+        from,
+        durationMs: Date.now() - startedAt,
+        replyLength: reply.length,
+      });
     } catch (err) {
-      logger.error("handler failure", err);
+      logger.error("handler failure", { from, err });
       await provider
         .send(from, FORECAST_UNAVAILABLE)
-        .catch((sendErr) => logger.error("send failed", sendErr));
+        .catch((sendErr) =>
+          logger.error("send failed", { from, err: sendErr }),
+        );
     }
 
     sendTwimlAck(res);
