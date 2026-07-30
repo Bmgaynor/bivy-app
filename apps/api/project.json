@@ -77,6 +77,12 @@
         "command": "tsx apps/api/scripts/check-prompts.ts"
       }
     },
+    "webhook-proxy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx apps/api/scripts/local-webhook-proxy.ts"
+      }
+    },
     "deploy": {
       "executor": "nx:run-commands",
       "options": {

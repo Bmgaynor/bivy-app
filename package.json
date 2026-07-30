@@ -9,6 +9,7 @@
     "lint": "nx lint api",
     "affected": "nx affected -t lint,test,build",
     "check-prompts": "nx run api:check-prompts",
+    "webhook-proxy": "nx run api:webhook-proxy",
     "deploy": "nx deploy api"
   },
   "private": true,
