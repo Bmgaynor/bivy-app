@@ -17,7 +17,9 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      # npm ci hard-fails on an EBADPLATFORM check for an optional esbuild
+      # platform binary that it should just skip; npm install tolerates it.
+      - run: npm install
 
       - uses: nrwl/nx-set-shas@v4
 
