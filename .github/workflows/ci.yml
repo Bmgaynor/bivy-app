@@ -1,0 +1,72 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # nx affected needs history to diff against
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # npm ci hard-fails on an EBADPLATFORM check for an optional esbuild
+      # platform binary that it should just skip; npm install tolerates it.
+      - run: npm install
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - run: npx nx affected -t lint,test,build --parallel=3
+
+  # Publishes ghcr.io/bmgaynor/bivy. Nothing deploys from here: Renovate in the
+  # homelab repo sees the new `latest` digest and opens a PR there, and merging
+  # it rolls the container out (see the homelab repo's CLAUDE.md).
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm install
+
+      # Explicit, not affected-gated: the image must always be built from main
+      - run: npx nx build api
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/bmgaynor/bivy:latest
+            ghcr.io/bmgaynor/bivy:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}

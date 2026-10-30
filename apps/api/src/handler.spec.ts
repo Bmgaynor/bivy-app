@@ -14,14 +14,8 @@ const mockGetWeatherProvider = vi.fn(() => ({ getForecast: mockGetForecast }));
 
 const mockAskWeatherQuestion = vi.fn();
 
-vi.mock("firebase-functions/https", () => ({
-  onRequest: (_opts: unknown, handler: unknown) => handler,
-}));
-
-vi.mock("firebase-functions/logger", () => ({
-  error: vi.fn(),
-  info: vi.fn(),
-  warn: vi.fn(),
+vi.mock("./log", () => ({
+  log: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
 
 vi.mock("./messaging/twilio", () => ({
@@ -36,17 +30,21 @@ vi.mock("./claude", () => ({
   askWeatherQuestion: mockAskWeatherQuestion,
 }));
 
-process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
-process.env.TWILIO_AUTH_TOKEN = "test-auth-token";
-process.env.TWILIO_ACCOUNT_SID = "test-account-sid";
-process.env.TWILIO_FROM_NUMBER = "+18005551234";
-process.env.ALLOWED_NUMBERS = "+14155551234";
-process.env.WEATHER_PROVIDER = "open-meteo";
+const { createSmsHandler } = await import("./handler");
 
-const { sms } = await import("./main");
+const sms = createSmsHandler({
+  port: 8787,
+  webhookUrl: "https://homelab.example.ts.net/sms",
+  anthropicApiKey: "test-anthropic-key",
+  twilioAccountSid: "test-account-sid",
+  twilioAuthToken: "test-auth-token",
+  twilioFromNumber: "+18005551234",
+  allowedNumbers: "+14155551234",
+  weatherProviderName: "open-meteo",
+});
 
 function fakeReq(body: Record<string, string> = {}) {
-  return { body } as unknown as import("firebase-functions/https").Request;
+  return { body } as unknown as import("express").Request;
 }
 
 function fakeRes() {
@@ -64,6 +62,18 @@ function fakeRes() {
   res.send.mockReturnValue(res);
   return res as unknown as import("express").Response;
 }
+
+describe("createSmsHandler", () => {
+  it("builds the providers once from config", () => {
+    expect(mockCreateTwilioProvider).toHaveBeenCalledWith({
+      accountSid: "test-account-sid",
+      authToken: "test-auth-token",
+      fromNumber: "+18005551234",
+      webhookUrl: "https://homelab.example.ts.net/sms",
+    });
+    expect(mockGetWeatherProvider).toHaveBeenCalledWith("open-meteo");
+  });
+});
 
 describe("sms handler", () => {
   beforeEach(() => {
@@ -120,7 +130,6 @@ describe("sms handler", () => {
 
     await sms(fakeReq(), res);
 
-    expect(mockGetWeatherProvider).toHaveBeenCalledWith("open-meteo");
     expect(mockGetForecast).toHaveBeenCalledWith(47.5, -121.8);
     expect(mockAskWeatherQuestion).toHaveBeenCalled();
     expect(mockSend).toHaveBeenCalledWith(

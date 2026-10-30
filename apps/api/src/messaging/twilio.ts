@@ -1,4 +1,4 @@
-import type { Request } from "firebase-functions/https";
+import type { Request } from "express";
 import twilio from "twilio";
 import type { MessagingProvider } from "./types";
 
@@ -6,6 +6,8 @@ export interface TwilioProviderConfig {
   accountSid: string;
   authToken: string;
   fromNumber: string;
+  /** The exact URL configured as the Twilio number's webhook. */
+  webhookUrl: string;
 }
 
 /**
@@ -29,25 +31,14 @@ export function createTwilioProvider(
       const signature = req.header("X-Twilio-Signature");
       if (!signature) return false;
 
-      // Always reconstruct as https — never trust req.protocol, which ngrok
-      // and Firebase's front end can misreport as http even though the
-      // webhook Twilio actually signed was https (Twilio numbers only ever
-      // have HTTPS webhooks configured). Getting this wrong is the #1 cause
-      // of "signature validation always fails" in this pattern.
-      //
-      // The webhook MUST be configured as the direct Cloud Run URL
-      // (https://sms-xxxxx-uc.a.run.app), not the friendly
-      // us-central1-PROJECT.cloudfunctions.net/sms proxy form — that proxy
-      // strips the /sms path before forwarding to this container, so
-      // req.originalUrl is always "/" and there is no header that recovers
-      // the original path. Signed against the direct Cloud Run URL, host +
-      // originalUrl reconstructs correctly (Twilio itself normalizes a
-      // bare-domain webhook URL to include the trailing "/" when signing).
-      const url = `https://${req.get("host")}${req.originalUrl}`;
+      // Validate against the configured webhook URL, never one rebuilt from
+      // the request: Tailscale Funnel and ngrok both sit in front of the
+      // server, so req.protocol / host / originalUrl reflect the hop to the
+      // container, not the URL Twilio actually signed.
       return twilio.validateRequest(
         cfg.authToken,
         signature,
-        url,
+        cfg.webhookUrl,
         req.body ?? {},
       );
     },

@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/api/src",
   "projectType": "application",
-  "tags": ["firebase:function", "firebase:name:api", "firebase:dep:bivy"],
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
@@ -12,50 +12,20 @@
         "outputPath": "dist/apps/api",
         "main": "apps/api/src/main.ts",
         "tsConfig": "apps/api/tsconfig.app.json",
-        "assets": [
-          "apps/api/src/assets",
-          {
-            "glob": "**/*",
-            "input": "apps/bivy/environment",
-            "output": "."
-          }
-        ],
+        "assets": ["apps/api/src/assets"],
         "generatePackageJson": true,
         "platform": "node",
         "bundle": true,
-        "thirdParty": false,
-        "dependenciesFieldType": "dependencies",
+        "thirdParty": true,
         "target": "node24",
         "format": ["esm"],
         "esbuildOptions": {
-          "logLevel": "info"
+          "logLevel": "info",
+          "banner": {
+            "js": "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);"
+          }
         }
       }
-    },
-    "prune-lockfile": {
-      "dependsOn": ["build"],
-      "cache": true,
-      "executor": "@nx/js:prune-lockfile",
-      "outputs": [
-        "{workspaceRoot}/dist/apps/api/package.json",
-        "{workspaceRoot}/dist/apps/api/package-lock.json"
-      ],
-      "options": {
-        "buildTarget": "build"
-      }
-    },
-    "copy-workspace-modules": {
-      "dependsOn": ["build"],
-      "cache": true,
-      "outputs": ["{workspaceRoot}/dist/apps/api/workspace_modules"],
-      "executor": "@nx/js:copy-workspace-modules",
-      "options": {
-        "buildTarget": "build"
-      }
-    },
-    "prune": {
-      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
-      "executor": "nx:noop"
     },
     "lint": {
       "executor": "nx:run-commands",
@@ -77,18 +47,12 @@
         "command": "tsx apps/api/scripts/check-prompts.ts"
       }
     },
-    "webhook-proxy": {
+    "serve": {
       "executor": "nx:run-commands",
+      "continuous": true,
       "options": {
-        "command": "tsx apps/api/scripts/local-webhook-proxy.ts"
+        "command": "tsx watch --env-file=apps/api/.env.local apps/api/src/main.ts"
       }
-    },
-    "deploy": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "nx run bivy:deploy --only functions:api --force"
-      },
-      "dependsOn": ["build"]
     }
   }
 }

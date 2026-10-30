@@ -1,0 +1,4 @@
+# The image only needs the built bundle (see apps/api/Dockerfile)
+*
+!dist/apps/api/main.js
+!dist/apps/api/package.json

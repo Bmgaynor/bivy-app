@@ -40,14 +40,8 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
-# Nx-Firebase
-.runtimeconfig.json
-**/.emulators/*
-**/.firebase/*
-database-debug.log
-firebase-debug.log
-firestore-debug.log
-pubsub-debug.log
-ui-debug.log
-firebase-export*
+# Local env (secrets) for `nx serve api`
+.env.local
+# Leftovers from the Firebase setup (removed 2026-10-29)
 .secret.local
+*-debug.log

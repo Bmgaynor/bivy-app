@@ -3,14 +3,12 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx serve bivy",
+    "dev": "nx serve api",
     "build": "nx build api",
     "test": "nx test api",
     "lint": "nx lint api",
     "affected": "nx affected -t lint,test,build",
-    "check-prompts": "nx run api:check-prompts",
-    "webhook-proxy": "nx run api:webhook-proxy",
-    "deploy": "nx deploy api"
+    "check-prompts": "nx run api:check-prompts"
   },
   "private": true,
   "devDependencies": {
@@ -23,21 +21,18 @@
     "@nx/js": "22.3.3",
     "@nx/node": "22.3.3",
     "@nx/workspace": "22.3.3",
-    "@simondotm/nx-firebase": "^22.3.3",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
     "esbuild": "^0.19.2",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
-    "firebase-functions-test": "^3.4.1",
-    "firebase-tools": "^15.3.1",
     "jest": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
-    "kill-port": "^2.0.1",
     "nx": "22.3.3",
     "prettier": "~3.6.2",
     "ts-jest": "^29.4.0",
@@ -50,7 +45,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
-    "firebase-functions": "^7.3.2",
+    "express": "^5.3.0",
     "twilio": "^6.0.2"
   }
 }
