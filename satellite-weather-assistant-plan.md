@@ -119,8 +119,8 @@ the single highest-value unknown in the whole project.
 
 ### Stack
 - Vite + TypeScript + React (lighter than Next.js; you don't need SSR for a static PWA)
-- Deployed to GitHub Pages at `bradgaynor.com/bivy-app`, replacing the Phase 1
-  `apps/site` compliance pages (see CLAUDE.md)
+- Deployed to GitHub Pages at `bradgaynor.com/bivy-app/app/`, next to the
+  `apps/site` compliance pages at `/bivy-app/`, which stay (see CLAUDE.md)
 - `vite-plugin-pwa` for service worker + manifest generation
 
 ### Features
@@ -135,12 +135,20 @@ the single highest-value unknown in the whole project.
   prefilled, or copies to clipboard as a fallback
 
 ### Compose format
-Keep it dense — every character costs satellite bandwidth:
+Keep it dense — every character costs satellite bandwidth. The server parser
+(`libs/sms-format`) accepts only `lat,lon | question`, so any trip context goes
+after the pipe, as part of the question:
 ```
-47.5,-121.8 8k SKI | wind loading on N aspects?
+47.5,-121.8 | ski 8k: wind loading on N aspects?
 ```
 Trip context contributes the elevation band and activity tag; the user types only
 the question.
+
+**Built (2026-11-08): the composer, without trips.** `apps/web` at
+`/bivy-app/app/`: GPS or typed coordinates, question templates (built-in plus
+saved ones), an ASCII-normalized preview with a 160-character count, and
+"Open in Messages" / Copy. Offline after first load. Trip records, the trip form
+and IndexedDB storage below are still to do.
 
 ### iOS PWA caveats to plan for
 - No push notifications worth relying on
