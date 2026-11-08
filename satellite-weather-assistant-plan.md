@@ -1,7 +1,7 @@
 # Satellite Weather Assistant — Phased Development Plan
 
 A text-in / text-out backcountry assistant. Users SMS a dedicated number with
-coordinates and a question; a stateless serverless function fetches live weather,
+coordinates and a question; a stateless webhook server fetches live weather,
 hands it to Claude, and texts back a useful answer. Designed to work over Apple's
 satellite messaging when off-grid.
 
@@ -9,8 +9,10 @@ satellite messaging when off-grid.
 
 ## Guiding Constraints
 
-- **Scale to zero.** No always-on compute. Serverless only.
-- **Free tier first.** Twilio trial, Cloud Run/Firebase free tier, GitHub Pages, Firestore free tier.
+- **No hosting bill.** The backend runs as a container on the homelab (always on,
+  but on hardware that's already running), replacing the original serverless /
+  scale-to-zero constraint. See "On the homelab" below.
+- **Free tier first.** Twilio trial, GitHub Pages, GHCR, Tailscale Funnel.
 - **Stateless until it hurts.** No conversation history in Phase 1.
 - **Decoupled frontend/backend.** Static PWA on GitHub Pages; function deployed separately.
 - **Allowlist-gated.** Only approved numbers get responses. Never hardcoded.
@@ -23,7 +25,7 @@ satellite messaging when off-grid.
 
 ### Components
 - Twilio trial account + one phone number
-- Single HTTP endpoint on Cloud Run *or* Firebase Functions (Node.js/TypeScript)
+- Single HTTP endpoint: an Express server (Node.js/TypeScript) in a container on the homelab
 - Open-Meteo (no API key, generous free tier) or NOAA NWS API
 - Anthropic API using existing account key
 
@@ -72,9 +74,9 @@ not present in the data; answer in under 300 plain-text characters; lead with th
 actionable fact, not preamble.
 
 ### Deliverables
-Built as an Nx monorepo (`apps/bivy` Firebase app container + `apps/api` function —
-see CLAUDE.md's Architecture section), not a flat `src/` layout:
-- `apps/api/src/main.ts` — handler (exported as `sms`)
+Built as an Nx monorepo (`apps/api` server — see CLAUDE.md's Architecture section),
+not a flat `src/` layout:
+- `apps/api/src/main.ts` — Express server; `handler.ts` — the `/sms` webhook handler
 - `apps/api/src/weather.ts` — provider abstraction
 - `apps/api/src/claude.ts` — API wrapper + prompt construction
 - `apps/api/src/auth.ts` — allowlist (signature validation lives in `messaging/twilio.ts`'s `verify()`)
@@ -227,14 +229,14 @@ Only relevant if it moves past personal use:
 |---|---|
 | Frontend | Vite + TypeScript + React, PWA via `vite-plugin-pwa` |
 | Frontend hosting | GitHub Pages → `bradmgainer.com` |
-| Backend | Firebase Functions v2 (Node.js/TypeScript), via `@simondotm/nx-firebase` |
+| Backend | Express container on the homelab (Pulumi-managed Docker), exposed via Tailscale Funnel |
 | LLM | Anthropic API (existing account) |
 | Weather | Open-Meteo (primary), NOAA NWS (fallback), NWAC (Phase 5) |
 | Messaging | Twilio → SendBlue (only if Phase 1.5 requires) |
-| Database | None → Firestore (Phase 4) |
+| Database | None → TBD for Phase 4 (Firestore was the original pick, chosen for Firebase Functions) |
 | Client storage | IndexedDB + localStorage |
-| CI/CD | GitHub Actions (backend), GitHub Pages Action (frontend) |
-| Monorepo | Nx, from day one — `apps/bivy` + `apps/api` today; `apps/web` (Phase 2) and `libs/*` (Phase 4) slot in later |
+| CI/CD | GitHub Actions → GHCR image → Renovate PR in the homelab repo (backend), GitHub Pages Action (frontend) |
+| Monorepo | Nx, from day one — `apps/api` today; `apps/web` (Phase 2) and `libs/*` (Phase 4) slot in later |
 
 **On NX:** built as an Nx monorepo from the start (superseding this section's
 original "hold off until Phase 4" recommendation — a deliberate call to have Phase 2's
@@ -242,11 +244,13 @@ original "hold off until Phase 4" recommendation — a deliberate call to have P
 rather than requiring a migration later). See CLAUDE.md's Architecture section and
 the `nx-generate-project` skill for the conventions those additions should follow.
 
-**On Cloud Run vs. Firebase Functions:** Firebase Functions is less ceremony for a
-single HTTP handler and integrates cleanly with Firestore later. Cloud Run gives
-more control and a better GitHub Actions story via `google-github-actions/deploy-cloudrun`.
-Either scales to zero. Pick Firebase Functions for speed; you can migrate the
-handler to Cloud Run in an afternoon if you outgrow it.
+**On the homelab (replaced Firebase Functions, 2026-10-29):** the backend moved
+from Firebase Functions to a container on the existing homelab server, managed by
+the Pulumi stack in the `bmgaynor/homelab` repo. Twilio reaches it through
+Tailscale Funnel (public HTTPS with no router port forward). Trade-off: no
+scale-to-zero and no cloud SLA (if the homelab is down, texts go unanswered),
+in exchange for no GCP project, no Secret Manager, and one place to run
+everything.
 
 ---
 
@@ -255,13 +259,11 @@ handler to Cloud Run in an afternoon if you outgrow it.
 ```bash
 node --version    # 20+
 git --version
-npm i -g firebase-tools    # if Firebase Functions
-# or: brew install --cask google-cloud-sdk    # if Cloud Run
 npm i -g twilio-cli        # optional, useful for local webhook testing
 brew install ngrok         # tunnel Twilio webhooks to localhost during dev
 ```
 
-Accounts needed: Twilio (trial), Google Cloud / Firebase, Anthropic (existing),
+Accounts needed: Twilio (trial), Tailscale (existing), Anthropic (existing),
 GitHub (existing).
 
 ---
@@ -277,10 +279,11 @@ GitHub (existing).
 5. **Wire the handler:** parse Twilio form body → allowlist check → weather → Claude → TwiML
 6. **Local test:** run locally, tunnel with ngrok, point the Twilio webhook at it, text it
 7. **Signature validation:** add it before anything is publicly deployed
-8. **GCP:** create the project, enable the API, create a deploy service account,
-   add its key as a GitHub secret
-9. **Actions workflow:** deploy on push to `main`, injecting secrets as env vars
-10. **Deploy:** point the Twilio webhook at the production URL, text it, confirm
+8. **Homelab:** make the GHCR image public, set the bivy secrets in the homelab
+   repo, enable Tailscale Funnel (see the homelab repo's CLAUDE.md)
+9. **Actions workflow:** publish the image on push to `main`; the homelab's
+   Renovate PR (merged by hand) rolls it out
+10. **Deploy:** point the Twilio webhook at the Funnel URL + `/sms`, text it, confirm
 11. **Negative test:** text from a number not on the allowlist, confirm no response
 12. **Go outside:** run the Phase 1.5 satellite test before writing another line of code
 

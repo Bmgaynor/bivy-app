@@ -5,7 +5,7 @@ description: Use when adding a new app or lib to this workspace — Phase 2's `a
 
 # Generating new apps/libs
 
-Mirrors how `apps/bivy` and `apps/api` were generated (see
+Mirrors how `apps/api` was generated (see
 `satellite-weather-assistant-plan.md`'s Nx scaffolding notes) so new projects follow
 the same conventions.
 
@@ -59,10 +59,10 @@ the same conventions.
 
 - Always pass `--directory=` explicitly with the full path (`apps/web`,
   `libs/trip-schema`) — a bare name lets Nx choose a default location that won't
-  match this workspace's existing `apps/bivy` / `apps/api` layout.
+  match this workspace's existing `apps/api` layout.
 - Match `--unitTestRunner=vitest` on every new project — `apps/api` required a
-  manual post-generation swap away from the `@simondotm/nx-firebase` plugin's
-  default Jest target (see `satellite-weather-assistant-plan.md`'s Nx-tooling
+  manual post-generation swap away from the (since-removed) `@simondotm/nx-firebase`
+  plugin's default Jest target (see `satellite-weather-assistant-plan.md`'s Nx-tooling
   notes); `@nx/react` and `@nx/js` generators support vitest natively via the
   flag, so no manual swap is needed for `web` or `libs/*`.
 - After generating, run the `nx-affected-check` skill once to confirm the new
