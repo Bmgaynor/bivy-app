@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img">
+  <title>Bivy</title>
+  <rect width="512" height="512" rx="112" fill="#2f6b4f"/>
+  <path d="M40 360 L170 190 L230 262 L300 160 L472 360 Z" fill="#7cc4a0" opacity="0.55"/>
+  <path d="M120 392 L256 196 L392 392 Z" fill="#f7f6f2"/>
+  <path d="M256 196 L218 392 L294 392 Z" fill="#2f6b4f" opacity="0.85"/>
+  <rect x="96" y="388" width="320" height="16" rx="8" fill="#f7f6f2"/>
+</svg>

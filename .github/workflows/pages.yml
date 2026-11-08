@@ -1,12 +1,18 @@
 name: pages
 
-# Publishes apps/site (plain HTML, no build) to GitHub Pages. As a project site
-# under the Bmgaynor.github.io user site, it's served at
+# Publishes one GitHub Pages site from two sources:
+#   apps/site (plain HTML compliance pages) -> /bivy-app/
+#   apps/web  (the composer PWA, built)     -> /bivy-app/app/
+# As a project site under the Bmgaynor.github.io user site, it's served at
 # https://bradgaynor.com/bivy-app/ with no CNAME of its own.
 on:
   push:
     branches: [main]
-    paths: ["apps/site/**", ".github/workflows/pages.yml"]
+    paths:
+      - "apps/site/**"
+      - "apps/web/**"
+      - "libs/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -27,11 +33,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # npm ci hard-fails on an EBADPLATFORM check for an optional esbuild
+      # platform binary (see ci.yml); npm install tolerates it.
+      - run: npm install
+
+      - run: npx nx build web
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/app
+          cp -R apps/site/. _site/
+          cp -R dist/apps/web/. _site/app/
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/site
+          path: _site
 
       - id: deployment
         uses: actions/deploy-pages@v4

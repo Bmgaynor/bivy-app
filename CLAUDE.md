@@ -21,9 +21,15 @@ make Phase 3 unnecessary entirely.
 
 ## Architecture
 
-An **Nx monorepo** (`nx@22.3.3`) with one project, **`apps/api`**: an Express server
-that runs as a Docker container on Bradley's homelab. (It was a Firebase Function
-until 2026-10-29; there is no GCP/Firebase project any more.)
+An **Nx monorepo** (`nx@22.3.3`) with three projects:
+- **`apps/api`** — an Express server that runs as a Docker container on Bradley's homelab.
+- **`apps/web`** — the composer PWA (Vite + React + `vite-plugin-pwa`), see below.
+- **`libs/sms-format`** — the `lat,lon | question` format both of them use:
+  `parseMessage`, `formatMessage`, `isPlainAscii`, `toAscii`. Change the message
+  format here, never in one app only.
+
+`apps/api` was a Firebase Function until 2026-10-29; there is no GCP/Firebase
+project any more.
 
 Inside `apps/api/src/`:
 - `main.ts` — entry point: `loadConfig()`, Express app with `POST /sms` and
@@ -37,8 +43,8 @@ Inside `apps/api/src/`:
 - `weather.ts` — Open-Meteo provider; `parseOpenMeteoResponse` is pure and
   fixture-tested, `createOpenMeteoProvider` is the impure fetch wrapper.
 - `claude.ts` — prompt construction + the Anthropic API call (`claude-haiku-4-5`).
-- `auth.ts`, `parse.ts`, `sms.ts` — pure helpers (allowlist, message-format parsing,
-  SMS character-budget/ASCII/truncation).
+- `auth.ts`, `sms.ts` — pure helpers (allowlist, SMS character budget/truncation,
+  usage and HELP texts). Parsing comes from `@bivy-app/sms-format`.
 - `config.ts` — reads env vars (see `apps/api/.env.example`); throws on a missing one.
 - `log.ts` — one JSON object per line on stdout/stderr, for Loki.
 
@@ -55,13 +61,31 @@ never `./` or `/bivy-app/`): the `bradgaynor.com` root site (`Bmgaynor.github.io
 has an old service worker that rewrites extensionless page loads to its own homepage.
 `HELP_REPLY` in `sms.ts` points at the same URL and email.
 
-`apps/web` (Phase 2 SPA) and `libs/*` (Phase 4 shared trip schema) don't exist yet —
-see the `nx-generate-project` skill for how to add them when that work starts.
+**`apps/web`** is the composer from Phase 2 (composer only, no trip records yet),
+served at `https://bradgaynor.com/bivy-app/app/index.html` (Vite `base` is
+`/bivy-app/app/`). One screen: GPS or typed coordinates, question templates, a
+preview with a 160-character count, then `sms:` "Open in Messages" or Copy. Bivy's
+number, saved templates and the last location live only in the phone's
+localStorage. The service worker precaches everything so it opens offline. Pure
+logic is in `src/compose.ts`. Icons in `public/` are generated from `icon.svg`
+(`npx pwa-assets-generator --config apps/web/pwa-assets.config.ts`). Tests run in
+jsdom with `src/test-setup.ts`, which works around Node 25+'s own `localStorage`
+global shadowing jsdom's.
+
+Both apps resolve `@bivy-app/sms-format` through `tsconfig.base.json` paths, plus a
+matching `resolve.alias` in each Vitest/Vite config (Vitest doesn't read tsconfig
+paths). Generators add `@nx/vitest`/`@nx/vite` inferred-target plugins and Prettier
+files; this repo uses explicit `nx:run-commands` targets and Biome instead.
+
+Phase 4's shared trip schema (`libs/*`) doesn't exist yet; see the
+`nx-generate-project` skill when that work starts.
 
 ## Commands
 
 ```bash
 nx serve api            # tsx watch, env from apps/api/.env.local (copy .env.example)
+nx serve web            # composer at http://localhost:4200/bivy-app/app/
+nx test web / nx test sms-format
 nx test api             # vitest
 nx lint api             # biome check apps/api
 nx build api            # esbuild: one self-contained ESM bundle, dist/apps/api/main.js
@@ -100,8 +124,9 @@ on to produce an installable `package.json`. Keep the bundle self-contained.
 4. The container publishes `127.0.0.1:8787` only. Tailscale Funnel on the host exposes
    it publicly at `https://homelab.<tailnet>.ts.net`; the Twilio webhook is that
    URL + `/sms`.
-5. `.github/workflows/pages.yml`: pushes to `main` that touch `apps/site/**` deploy
-   it to GitHub Pages (Actions source). It's a project site under the
+5. `.github/workflows/pages.yml`: pushes to `main` that touch `apps/site/**`,
+   `apps/web/**` or `libs/**` build the composer and publish one Pages site:
+   `apps/site/*` at `/bivy-app/` and the `apps/web` build at `/bivy-app/app/`. It's a project site under the
    `Bmgaynor.github.io` user site, so the path is the repo name and there's no CNAME.
 
 This repo is **public** (needed for Pages on the free plan). Secrets never belong
@@ -125,8 +150,7 @@ always means they differ.
   ASCII-only, no markdown, ≤300 chars, grounded in the supplied weather data. Use
   while iterating on the system prompt.
 - `nx-affected-check` — run before committing: `nx affected -t lint,test,build`.
-- `nx-generate-project` — exact generator commands for future `apps/web` (Phase 2)
-  and `libs/*` (Phase 4).
+- `nx-generate-project` — generator commands for new apps and `libs/*` (Phase 4).
 
 ## Status
 
