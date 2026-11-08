@@ -119,7 +119,8 @@ the single highest-value unknown in the whole project.
 
 ### Stack
 - Vite + TypeScript + React (lighter than Next.js; you don't need SSR for a static PWA)
-- Deployed to GitHub Pages on the existing `bradmgainer.com` setup
+- Deployed to GitHub Pages at `bradgaynor.com/bivy-app`, replacing the Phase 1
+  `apps/site` compliance pages (see CLAUDE.md)
 - `vite-plugin-pwa` for service worker + manifest generation
 
 ### Features
@@ -228,7 +229,7 @@ Only relevant if it moves past personal use:
 | Layer | Choice |
 |---|---|
 | Frontend | Vite + TypeScript + React, PWA via `vite-plugin-pwa` |
-| Frontend hosting | GitHub Pages → `bradmgainer.com` |
+| Frontend hosting | GitHub Pages → `bradgaynor.com/bivy-app` (Phase 1: static `apps/site` for toll-free verification) |
 | Backend | Express container on the homelab (Pulumi-managed Docker), exposed via Tailscale Funnel |
 | LLM | Anthropic API (existing account) |
 | Weather | Open-Meteo (primary), NOAA NWS (fallback), NWAC (Phase 5) |

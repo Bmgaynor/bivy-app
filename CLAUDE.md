@@ -46,6 +46,15 @@ The handler always answers the webhook with an empty TwiML 200 (the reply goes o
 via REST). Non-allowlisted senders get no reply at all; handler failures send
 `FORECAST_UNAVAILABLE` from `sms.ts`.
 
+**`apps/site/`** is not an Nx project: plain HTML/CSS pages (home, privacy, terms)
+published to GitHub Pages at `https://bradgaynor.com/bivy-app/index.html`. They exist
+for Twilio toll-free verification, so they must keep the opt-in description, privacy
+statement (mobile info never shared for marketing), STOP/HELP instructions and the
+contact `bivy@bradgaynor.com`. **Link with explicit `.html` paths** (`index.html`,
+never `./` or `/bivy-app/`): the `bradgaynor.com` root site (`Bmgaynor.github.io`)
+has an old service worker that rewrites extensionless page loads to its own homepage.
+`HELP_REPLY` in `sms.ts` points at the same URL and email.
+
 `apps/web` (Phase 2 SPA) and `libs/*` (Phase 4 shared trip schema) don't exist yet —
 see the `nx-generate-project` skill for how to add them when that work starts.
 
@@ -91,6 +100,12 @@ on to produce an installable `package.json`. Keep the bundle self-contained.
 4. The container publishes `127.0.0.1:8787` only. Tailscale Funnel on the host exposes
    it publicly at `https://homelab.<tailnet>.ts.net`; the Twilio webhook is that
    URL + `/sms`.
+5. `.github/workflows/pages.yml`: pushes to `main` that touch `apps/site/**` deploy
+   it to GitHub Pages (Actions source). It's a project site under the
+   `Bmgaynor.github.io` user site, so the path is the repo name and there's no CNAME.
+
+This repo is **public** (needed for Pages on the free plan). Secrets never belong
+here; they live in the homelab repo, which stays private.
 
 The homelab repo has its own CLAUDE.md with hard rules (Pulumi only runs on the
 server, changes go through PRs). Follow it when touching the deployment side.

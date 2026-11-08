@@ -6,7 +6,12 @@ import type { Config } from "./config";
 import { log } from "./log";
 import { createTwilioProvider } from "./messaging/twilio";
 import { parseMessage } from "./parse";
-import { FORECAST_UNAVAILABLE, USAGE_HINT } from "./sms";
+import {
+  FORECAST_UNAVAILABLE,
+  HELP_REPLY,
+  isHelpRequest,
+  USAGE_HINT,
+} from "./sms";
 import { getWeatherProvider } from "./weather";
 
 // TwiML acknowledgement sent after the real reply has already gone out via
@@ -46,6 +51,15 @@ export function createSmsHandler(config: Config) {
     if (!isAllowed(from, allowlist)) {
       // Silent per the Definition of Done — a non-allowlisted number gets no reply.
       log.warn("rejected non-allowlisted sender", { from });
+      sendTwimlAck(res);
+      return;
+    }
+
+    if (isHelpRequest(body)) {
+      log.info("help request", { from });
+      await provider
+        .send(from, HELP_REPLY)
+        .catch((err) => log.error("send failed", { from, err }));
       sendTwimlAck(res);
       return;
     }
