@@ -2,10 +2,8 @@
 // segments and enforce it server-side as a backstop on top of prompt instructions.
 export const SMS_CHAR_BUDGET = 300;
 
-export function isPlainAscii(s: string): boolean {
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: ASCII range check is intentional
-  return /^[\x00-\x7F]*$/.test(s);
-}
+// Shared with apps/web's composer; re-exported so existing imports keep working.
+export { isPlainAscii } from "@bivy-app/sms-format";
 
 /**
  * Word-boundary-safe truncation to `budget` characters, appending "..." when

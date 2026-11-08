@@ -1,11 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { parseMessage } from "@bivy-app/sms-format";
 import type { Request, Response } from "express";
 import { isAllowed, parseAllowlist } from "./auth";
 import { askWeatherQuestion } from "./claude";
 import type { Config } from "./config";
 import { log } from "./log";
 import { createTwilioProvider } from "./messaging/twilio";
-import { parseMessage } from "./parse";
 import {
   FORECAST_UNAVAILABLE,
   HELP_REPLY,
