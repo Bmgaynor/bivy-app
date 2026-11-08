@@ -125,6 +125,20 @@ describe("sms handler", () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
+  it("sends contact info for HELP without fetching weather", async () => {
+    mockParseInbound.mockReturnValue({ from: "+14155551234", body: " help " });
+    const res = fakeRes();
+
+    await sms(fakeReq(), res);
+
+    expect(mockSend).toHaveBeenCalledWith(
+      "+14155551234",
+      expect.stringContaining("bivy@bradgaynor.com"),
+    );
+    expect(mockGetForecast).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
   it("fetches weather, asks Claude, and sends the reply on the happy path", async () => {
     const res = fakeRes();
 

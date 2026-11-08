@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   FORECAST_UNAVAILABLE,
+  HELP_REPLY,
+  isHelpRequest,
   isPlainAscii,
   SMS_CHAR_BUDGET,
   truncateToBudget,
@@ -60,5 +62,25 @@ describe("stock messages", () => {
       expect(isPlainAscii(msg)).toBe(true);
       expect(msg.length).toBeLessThanOrEqual(SMS_CHAR_BUDGET);
     }
+  });
+});
+
+describe("isHelpRequest", () => {
+  it("matches HELP and INFO in any case, ignoring surrounding space", () => {
+    for (const body of ["HELP", "help", " Help ", "INFO", "info"]) {
+      expect(isHelpRequest(body)).toBe(true);
+    }
+  });
+
+  it("doesn't match questions that mention help", () => {
+    expect(isHelpRequest("47.5,-121.8 | help me pick a camp")).toBe(false);
+    expect(isHelpRequest("helpful")).toBe(false);
+  });
+});
+
+describe("HELP_REPLY", () => {
+  it("is plain ASCII and fits one 160-char segment", () => {
+    expect(isPlainAscii(HELP_REPLY)).toBe(true);
+    expect(HELP_REPLY.length).toBeLessThanOrEqual(160);
   });
 });

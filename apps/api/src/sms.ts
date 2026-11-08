@@ -28,5 +28,14 @@ export function truncateToBudget(
 export const USAGE_HINT =
   "Text: lat,lon | your question (e.g. 47.5,-121.8 | wind loading this afternoon?)";
 
+// Reply to HELP/INFO. Toll-free verification expects HELP to return contact
+// info; STOP is handled by Twilio itself and never reaches the handler.
+export const HELP_REPLY =
+  "Bivy: text lat,lon | question. Help: bivy@bradgaynor.com. Info: bradgaynor.com/bivy-app/index.html. Reply STOP to opt out.";
+
+export function isHelpRequest(body: string): boolean {
+  return /^(help|info)$/i.test(body.trim());
+}
+
 export const FORECAST_UNAVAILABLE =
   "Couldn't reach the forecast right now. Try again shortly.";

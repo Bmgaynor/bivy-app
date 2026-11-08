@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bivy: backcountry weather by text</title>
+    <meta
+      name="description"
+      content="Bivy answers backcountry weather questions by text message, including over satellite SMS."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Links end in .html on purpose: the bradgaynor.com root site has an old
+         service worker that rewrites extensionless page loads to its own homepage. -->
+    <header>
+      <h1><a href="index.html">Bivy</a></h1>
+      <p class="tagline">Backcountry weather answers by text message.</p>
+    </header>
+
+    <main>
+      <h2>What it is</h2>
+      <p>
+        Bivy is a small personal weather assistant for hiking, climbing and
+        camping. You text it your GPS coordinates and a question. It looks up
+        the current forecast for that spot and texts back a short, plain answer.
+        It's built to work over satellite SMS when you're out of cell range.
+      </p>
+      <p>Send a message like:</p>
+      <span class="sms">47.6,-121.8 | wind and rain tonight?</span>
+      <p>and get a reply like:</p>
+      <span class="sms"
+        >Overnight: 2mph wind from the south, 3% rain chance. No rain
+        expected.</span
+      >
+
+      <h2>Who can use it</h2>
+      <p>
+        Bivy is a private service for a small group of people who have asked to
+        use it. Only phone numbers that have been added to its approved list get
+        replies; messages from any other number are ignored.
+      </p>
+
+      <h2>How you opt in</h2>
+      <p>
+        To be added, ask the operator by email at
+        <a href="mailto:bivy@bradgaynor.com">bivy@bradgaynor.com</a>. Once your
+        number is approved, you start every conversation yourself: Bivy only
+        ever sends a message in reply to one you sent it. It never sends
+        marketing or messages you didn't ask for.
+      </p>
+
+      <h2>How often you'll get messages</h2>
+      <p>
+        One reply for each message you send. Message frequency depends entirely
+        on how often you text it. Message and data rates may apply.
+      </p>
+
+      <div class="notice">
+        <p>
+          <strong>Reply STOP to opt out</strong> at any time, and you won't get
+          any more messages. <strong>Reply HELP for help</strong>, or email
+          <a href="mailto:bivy@bradgaynor.com">bivy@bradgaynor.com</a>.
+        </p>
+      </div>
+
+      <h2>More</h2>
+      <p>
+        Read the <a href="privacy.html">privacy policy</a> and the
+        <a href="terms.html">terms</a>.
+      </p>
+    </main>
+
+    <footer>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </nav>
+      <p>Contact: <a href="mailto:bivy@bradgaynor.com">bivy@bradgaynor.com</a></p>
+    </footer>
+  </body>
+</html>
