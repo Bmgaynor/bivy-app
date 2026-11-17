@@ -21,6 +21,9 @@ make Phase 3 unnecessary entirely.
 
 ## Architecture
 
+**Adding a feature? Read [`docs/FEATURES.md`](docs/FEATURES.md) first:** where each
+kind of change goes, the rules that bite, and how changes reach production.
+
 An **Nx monorepo** (`nx@22.3.3`) with three projects:
 - **`apps/api`** — an Express server that runs as a Docker container on Bradley's homelab.
 - **`apps/web`** — the composer PWA (Vite + React + `vite-plugin-pwa`), see below.
